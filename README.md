@@ -171,11 +171,11 @@ only.
 
 ## Documentation
 
-- [docs/THEORY.md](docs/THEORY.md) — the methods, tableaux, stability, and
+- [THEORY.md](THEORY.md) — the methods, tableaux, stability, and
   the closed-form BER derivations
-- [docs/VALIDATION.md](docs/VALIDATION.md) — what is measured, how, and what
+- [VALIDATION.md](VALIDATION.md) — what is measured, how, and what
   each number is allowed to mean
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — layout, HTTP contract,
+- [ARCHITECTURE.md](ARCHITECTURE.md) — layout, HTTP contract,
   extension points
 
 ## Layout
