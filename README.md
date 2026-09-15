@@ -10,7 +10,7 @@ with a finer grid. The second is a digital link simulator whose measured bit
 error rates are checked against the closed-form expressions for the same
 constellations. A browser dashboard runs both on demand.
 
-![BER curves](figures/ber_curves.png)
+![BER curves](ber_curves.png)
 
 ## What it does
 
@@ -103,7 +103,7 @@ asymptotic range exists the study reports that instead of a slope.
 | RK4 | 4 | 4.054 | 1.4 % |
 | Radau IIA | 5 | 5.006 | 0.1 % |
 
-![Convergence](figures/convergence.png)
+![Convergence](convergence.png)
 
 ### Stiffness
 
@@ -118,7 +118,7 @@ so h|lambda| = 50 against an explicit stability limit of 2:
 | TR-BDF2 | completed | 2.0e-8 % | 498 |
 | Radau IIA | completed | 1.4e-11 % | 400 |
 
-![Stiff stability](figures/stiff_stability.png)
+![Stiff stability](stiff_stability.png)
 
 Robertson kinetics, nine decades of timescale, integrated by TR-BDF2: total
 mass is conserved to 3.6e-15, against an exact invariant.
@@ -146,7 +146,7 @@ misses are understood: 64-QAM at 14 dB reads 5.5 % low on 1221 errors, a
 was expected, which is an ordinary Poisson outcome that no interval built on
 one count can absorb.
 
-![Constellations](figures/constellations.png)
+![Constellations](constellations.png)
 
 **The two error figures are not comparable.** The 0.01 % claim belongs to the
 ODE solvers, where the reference is exact and the only error is
