@@ -1,0 +1,15 @@
+# Runtime
+numpy>=1.24
+scipy>=1.10
+
+# HTTP API and dashboard
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.0
+
+# Tests
+pytest>=7.4
+httpx>=0.26
+
+# Figures (experiments only)
+matplotlib>=3.7

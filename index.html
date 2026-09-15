@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>physim workbench</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+
+<header class="bar">
+  <h1>physim</h1>
+  <p class="strap">Numerical solvers and physical-layer models, scored against closed-form references.</p>
+  <div class="status" id="status" role="status" aria-live="polite">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">ready</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" class="tab active" data-view="ber">Bit error rate</button>
+  <button role="tab" class="tab" data-view="solve">Solver accuracy</button>
+  <button role="tab" class="tab" data-view="order">Order of accuracy</button>
+  <button role="tab" class="tab" data-view="iq">Constellation</button>
+  <button role="tab" class="tab" data-view="path">Attenuation</button>
+</nav>
+
+<main>
+  <!-- ------------------------------------------------ bit error rate -->
+  <section class="view active" id="view-ber">
+    <aside class="rail">
+      <h2>Link under test</h2>
+      <label>Modulation
+        <select id="berScheme">
+          <option value="bpsk">BPSK</option>
+          <option value="qpsk" selected>QPSK</option>
+          <option value="psk8">8-PSK</option>
+          <option value="qam16">16-QAM</option>
+          <option value="qam64">64-QAM</option>
+          <option value="qam256">256-QAM</option>
+        </select>
+      </label>
+      <label>Channel
+        <select id="berChannel">
+          <option value="awgn" selected>AWGN</option>
+          <option value="rayleigh">Rayleigh flat fading</option>
+          <option value="rician">Rician, K = 6 dB</option>
+        </select>
+      </label>
+      <div class="pair">
+        <label>Eb/N0 from
+          <input type="number" id="berStart" value="0" step="1" min="-10" max="50">
+        </label>
+        <label>to
+          <input type="number" id="berStop" value="10" step="1" min="-10" max="60">
+        </label>
+      </div>
+      <label>Step size, dB
+        <input type="number" id="berStep" value="2" step="0.5" min="0.5" max="6">
+      </label>
+      <label>Stop after this many bit errors
+        <input type="number" id="berErrors" value="200" step="50" min="20" max="3000">
+        <small>Precision follows the error count, not the bit count.</small>
+      </label>
+      <label>Symbol ceiling per point
+        <input type="number" id="berMax" value="500000" step="100000" min="10000" max="2000000">
+        <small>Caps the run when errors are too rare to reach the target.</small>
+      </label>
+      <button class="run" id="berRun">Run sweep</button>
+      <div class="note" id="berNote"></div>
+    </aside>
+    <div class="stage">
+      <div class="canvas-wrap"><canvas id="berCanvas"></canvas></div>
+      <div class="readout" id="berReadout"></div>
+      <div class="tablewrap"><table id="berTable"></table></div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------- solver accuracy -->
+  <section class="view" id="view-solve">
+    <aside class="rail">
+      <h2>Integration</h2>
+      <label>Problem
+        <select id="solveProblem"></select>
+      </label>
+      <label>Method
+        <select id="solveSolver"></select>
+      </label>
+      <label>Steps <span class="hint" id="stepsHint">fixed-step methods</span>
+        <input type="number" id="solveSteps" value="2000" step="100" min="10" max="200000">
+      </label>
+      <label>Relative tolerance <span class="hint">adaptive methods</span>
+        <select id="solveRtol">
+          <option value="1e-4">1e-4</option>
+          <option value="1e-6">1e-6</option>
+          <option value="1e-8" selected>1e-8</option>
+          <option value="1e-10">1e-10</option>
+          <option value="1e-12">1e-12</option>
+        </select>
+      </label>
+      <button class="run" id="solveRun">Integrate</button>
+      <div class="note" id="solveNote"></div>
+    </aside>
+    <div class="stage">
+      <div class="canvas-wrap"><canvas id="solveCanvas"></canvas></div>
+      <div class="readout" id="solveReadout"></div>
+      <div class="canvas-wrap short"><canvas id="errCanvas"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------ order of accuracy -->
+  <section class="view" id="view-order">
+    <aside class="rail">
+      <h2>Refinement study</h2>
+      <label>Problem
+        <select id="orderProblem"></select>
+      </label>
+      <fieldset id="orderMethods">
+        <legend>Methods</legend>
+      </fieldset>
+      <button class="run" id="orderRun">Measure order</button>
+      <div class="note">Halving the step should divide the error by
+        2<sup>p</sup>. The fitted slope is the measured <em>p</em>; points in
+        the round-off floor are excluded from the fit.</div>
+    </aside>
+    <div class="stage">
+      <div class="canvas-wrap"><canvas id="orderCanvas"></canvas></div>
+      <div class="readout" id="orderReadout"></div>
+      <div class="tablewrap"><table id="orderTable"></table></div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------- constellation -->
+  <section class="view" id="view-iq">
+    <aside class="rail">
+      <h2>Received samples</h2>
+      <label>Modulation
+        <select id="iqScheme">
+          <option value="qpsk">QPSK</option>
+          <option value="psk8">8-PSK</option>
+          <option value="qam16" selected>16-QAM</option>
+          <option value="qam64">64-QAM</option>
+          <option value="qam256">256-QAM</option>
+        </select>
+      </label>
+      <label>Channel
+        <select id="iqChannel">
+          <option value="awgn" selected>AWGN</option>
+          <option value="rayleigh">Rayleigh flat fading</option>
+          <option value="rician">Rician, K = 6 dB</option>
+        </select>
+      </label>
+      <label>Eb/N0, dB <output id="iqSnrOut">18</output>
+        <input type="range" id="iqSnr" min="0" max="35" step="0.5" value="18">
+      </label>
+      <label>Symbols
+        <input type="number" id="iqCount" value="3000" step="500" min="200" max="20000">
+      </label>
+      <div class="note">Equalised with perfect channel knowledge, so fading
+        shows up as noise enhancement in the deep fades rather than as a
+        rotation.</div>
+    </aside>
+    <div class="stage">
+      <div class="canvas-wrap square"><canvas id="iqCanvas"></canvas></div>
+      <div class="readout" id="iqReadout"></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ attenuation -->
+  <section class="view" id="view-path">
+    <aside class="rail">
+      <h2>Propagation</h2>
+      <label>Carrier frequency
+        <select id="pathFreq">
+          <option value="433e6">433 MHz</option>
+          <option value="868e6">868 MHz</option>
+          <option value="2.4e9" selected>2.4 GHz</option>
+          <option value="5.8e9">5.8 GHz</option>
+          <option value="28e9">28 GHz</option>
+        </select>
+      </label>
+      <label>Path-loss exponent <output id="pathExpOut">3.0</output>
+        <input type="range" id="pathExp" min="1.5" max="6" step="0.1" value="3">
+        <small>2 free space, 2.7–3.5 urban, 4–6 indoor.</small>
+      </label>
+      <div class="pair">
+        <label>Transmit height, m
+          <input type="number" id="pathHt" value="10" step="1" min="1" max="120">
+        </label>
+        <label>Receive height, m
+          <input type="number" id="pathHr" value="1.5" step="0.5" min="0.5" max="50">
+        </label>
+      </div>
+      <h2>Budget</h2>
+      <div class="pair">
+        <label>Distance, m
+          <input type="number" id="budDist" value="1000" step="100" min="1">
+        </label>
+        <label>Transmit power, dBm
+          <input type="number" id="budPow" value="20" step="1" min="-10" max="50">
+        </label>
+      </div>
+      <div class="pair">
+        <label>Bandwidth, MHz
+          <input type="number" id="budBw" value="20" step="1" min="0.1">
+        </label>
+        <label>Noise figure, dB
+          <input type="number" id="budNf" value="6" step="0.5" min="0" max="20">
+        </label>
+      </div>
+      <label>Modulation and target BER
+        <select id="budScheme">
+          <option value="bpsk">BPSK</option>
+          <option value="qpsk">QPSK</option>
+          <option value="qam16" selected>16-QAM</option>
+          <option value="qam64">64-QAM</option>
+          <option value="qam256">256-QAM</option>
+        </select>
+      </label>
+      <label>
+        <select id="budBer">
+          <option value="1e-3">1e-3, uncoded voice</option>
+          <option value="1e-6" selected>1e-6, data</option>
+          <option value="1e-9">1e-9, backhaul</option>
+        </select>
+      </label>
+    </aside>
+    <div class="stage">
+      <div class="canvas-wrap"><canvas id="pathCanvas"></canvas></div>
+      <div class="readout" id="budReadout"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Every curve is computed on request: no cached figures.</span>
+  <span id="verText"></span>
+</footer>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
